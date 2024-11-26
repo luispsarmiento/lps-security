@@ -11,6 +11,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Security.KeyVault.Secrets;
+using Azure.Identity;
 
 namespace Service
 {
@@ -19,12 +21,22 @@ namespace Service
 		private readonly IUserService userService;
 		private readonly ISecurityService securityService;
 		private readonly IOptionsSnapshot<JwtOptions> jwtOptionSpanshot;
+		private readonly IOptionsSnapshot<JwtBearerOptions> jwtBearerOptionSpanshot;
 
-		public JwtTokenService(IUserService userService, ISecurityService securityService, IOptionsSnapshot<JwtOptions> jwtOptionSpanshot)
+		private readonly string jwtKey;
+
+		public JwtTokenService(IUserService userService, ISecurityService securityService, IOptionsSnapshot<JwtOptions> jwtOptionSpanshot, IOptionsSnapshot<JwtBearerOptions> jwtBearerOptionSpanshot)
 		{
 			this.userService = userService;
 			this.securityService = securityService;
 			this.jwtOptionSpanshot = jwtOptionSpanshot;
+			this.jwtBearerOptionSpanshot = jwtBearerOptionSpanshot;
+
+			string keyVaultName = Environment.GetEnvironmentVariable("KEY_VAULT_NAME");
+			var kvClient = new SecretClient(new Uri(keyVaultName),
+				new DefaultAzureCredential());
+			KeyVaultSecret keySecret = kvClient.GetSecret("jwtKey2");
+			jwtKey = keySecret.Value;
 		}
 
 		public async Task AddUserTokenAsync(User user, string refreshTokenSerial, string accessToken, string refreshTokenSourceSerial)
@@ -126,7 +138,7 @@ namespace Service
 				claims.Add(new Claim(ClaimTypes.Role, role.Name, ClaimValueTypes.String, jwtIssuer));
 			}
 
-			SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptionSpanshot.Value.Key));
+			SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 			SigningCredentials credential = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 			DateTime now = DateTime.UtcNow;
@@ -156,7 +168,7 @@ namespace Service
 				new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64, jwtIssuer),
 				new Claim(ClaimTypes.SerialNumber, refreshTokenSerial, ClaimValueTypes.String, jwtIssuer)
 			};
-			SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptionSpanshot.Value.Key));
+			SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 			SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 			DateTime now = DateTime.UtcNow;
 			JwtSecurityToken token = new JwtSecurityToken(
@@ -203,7 +215,7 @@ namespace Service
 						RequireExpirationTime = true,
 						ValidateIssuer = false,
 						ValidateAudience = false,
-						IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptionSpanshot.Value.Key)),
+						IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
 						ValidateIssuerSigningKey = true,
 						ValidateLifetime = true,
 						ClockSkew = TimeSpan.Zero

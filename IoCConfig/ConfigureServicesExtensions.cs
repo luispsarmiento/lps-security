@@ -14,6 +14,8 @@ using Microsoft.OpenApi.Models;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 
 namespace IoCConfig
 {
@@ -32,8 +34,10 @@ namespace IoCConfig
 			));
 		}
 
-		public static void AddCustomJwtBearer(this IServiceCollection services, IConfiguration configuration)
+		public static void AddCustomJwtBearer(this IServiceCollection services, IConfiguration configuration, SecretClient client)
 		{
+			KeyVaultSecret keySecret = client.GetSecret("jwtKey2");
+			string key = keySecret.Value;
 			services.AddAuthorization(options =>
 			{
 				options.AddPolicy(CustomRoles.Admin, policy => policy.RequireRole(CustomRoles.Admin));
@@ -56,7 +60,7 @@ namespace IoCConfig
 					ValidateIssuer = true,
 					ValidAudience = configuration["Jwt:Audience"],
 					ValidateAudience = true,
-					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
+					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
 					ValidateIssuerSigningKey = true,
 					ValidateLifetime = true,
 					ClockSkew = TimeSpan.Zero
@@ -125,14 +129,20 @@ namespace IoCConfig
 				});
 			});
 		}
-		public static void AddCustomCosmosDbService(this IServiceCollection services, IConfiguration configuration)
+		public static void AddCustomCosmosDbService(this IServiceCollection services, IConfiguration configuration, SecretClient client)
         {
             /*services.AddDbContext<CosmosDbContext>(options =>
             {
                 var configurationSection = configuration.GetSection("CosmosDb");
                 options.UseCosmos(configurationSection["Account"], configurationSection["Key"], configurationSection["DatabaseName"]);
             });*/
+			KeyVaultSecret accountEndpointSecret = client.GetSecret("cosmosDbAccountEndpoint");
+			KeyVaultSecret accountAccountKey = client.GetSecret("cosmosDbAccountKey");
+			KeyVaultSecret accountAccountDatabaseName = client.GetSecret("cosmosDbDatabaseName");
 
+			string accountEndpoint = accountEndpointSecret.Value;
+			string accountKey = accountAccountKey.Value;
+			string accountDatabaseName = accountAccountDatabaseName.Value;
 			services.AddDbContext<LPSSecurityDbContext>(optionsBuilder => optionsBuilder
 					/*** Implemented LoggerFactory to get query information to CosmosBD ***/
 					.EnableSensitiveDataLogging()//Los datos sensibles quedan expuestos, habilitar esto si hay una medida de seguridad
@@ -146,8 +156,10 @@ namespace IoCConfig
                                .Throw(new[] { CoreEventId.FirstWithoutOrderByAndFilterWarning })// indicamos que se lance un warning si una query usar First whithout OrderBy
 					)
 					.UseCosmos(
-						connectionString: configuration.GetSection("CosmosDB")["ConnectionString"],
-						databaseName: configuration.GetSection("CosmosDB")["DatabaseName"],
+						//connectionString: string.Format("AccountEndpoint={0};AccountKey={1};", client.GetSecret("cosmosDbAccountEndpoint").Value.ToString(), client.GetSecret("cosmosDbAccountKey").Value.ToString()),
+						accountEndpoint: accountEndpoint,
+						accountKey: accountKey,
+						databaseName: accountDatabaseName,
 						cosmosOptionsAction: options =>
 						{
 							options.ConnectionMode(ConnectionMode.Direct);

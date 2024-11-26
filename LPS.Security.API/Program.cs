@@ -1,18 +1,24 @@
 using LPS.Security.API;
 using IoCConfig;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 
 var builder = WebApplication.CreateBuilder(args);
+
+string keyVaultName = Environment.GetEnvironmentVariable("KEY_VAULT_NAME");
+var kvClient = new SecretClient(new Uri(keyVaultName),
+    new DefaultAzureCredential());
 
 // Add services to the container.
 builder.Services.AddCustomOptions(builder.Configuration);
 builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddCustomServices();
-builder.Services.AddCustomJwtBearer(builder.Configuration);
+builder.Services.AddCustomJwtBearer(builder.Configuration, kvClient);
 builder.Services.AddCustomCors();
 builder.Services.AddCustomAutoMapper(typeof(Program));
 builder.Services.AddControllers();
 builder.Services.AddCustomSwagger();
-builder.Services.AddCustomCosmosDbService(builder.Configuration);
+builder.Services.AddCustomCosmosDbService(builder.Configuration, kvClient);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
