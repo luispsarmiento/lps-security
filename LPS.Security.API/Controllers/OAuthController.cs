@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using LPS.Security.API.ViewModels;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace LPS.Security.API.Controllers
 {
@@ -148,5 +149,20 @@ namespace LPS.Security.API.Controllers
 			return Ok(new { message = "You loged out successfully." });
 		}
 
+		[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+		[HttpGet]
+		public async Task<IActionResult> TokenValidate()
+		{
+			User user = await userService.GetCurrentUserDataAsync();
+
+			if(user is null){
+				return Unauthorized();
+			}
+
+			return Ok(new {
+				user.Email,
+				user.DisplayName
+			});
+		}
 	}
 }

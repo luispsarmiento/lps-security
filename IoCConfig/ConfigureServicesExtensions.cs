@@ -16,6 +16,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace IoCConfig
 {
@@ -63,14 +65,38 @@ namespace IoCConfig
 					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
 					ValidateIssuerSigningKey = true,
 					ValidateLifetime = true,
-					ClockSkew = TimeSpan.Zero
+					ClockSkew = TimeSpan.Zero,
+					RequireExpirationTime = true,
+					RequireSignedTokens = true
 				};
 				configureOptions.Events = new JwtBearerEvents
 				{
+					OnAuthenticationFailed = context =>
+					{
+						if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+						{
+							context.Response.Headers.Add("Token-Expired", "true");
+						}
+						return Task.CompletedTask;
+					},
 					OnTokenValidated = context =>
 					{
 						IJwtTokenService jwtTokenService = context.HttpContext.RequestServices.GetRequiredService<IJwtTokenService>();
 						return jwtTokenService.ValidateAsync(context);
+					},
+					OnChallenge = context =>
+					{
+						context.HandleResponse();
+						context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+						context.Response.ContentType = "application/json";
+						
+						var result = JsonConvert.SerializeObject(new
+                        {
+                            error = "No autorizado",
+							message = "Necesita autenticarse para acceder a este recurso."
+						});
+						
+						return context.Response.WriteAsync(result);
 					}
 				};
 			});
