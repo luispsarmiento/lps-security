@@ -160,6 +160,7 @@ namespace LPS.Security.API.Controllers
 			}
 
 			return Ok(new {
+				user.Id,
 				user.Email,
 				user.DisplayName
 			});
