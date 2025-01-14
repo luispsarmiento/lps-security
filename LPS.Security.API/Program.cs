@@ -5,7 +5,7 @@ using Azure.Security.KeyVault.Secrets;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string keyVaultName = Environment.GetEnvironmentVariable("KEY_VAULT_NAME");
+string keyVaultName = "https://lps-mt-todo-vault.vault.azure.net/";//Environment.GetEnvironmentVariable("KEY_VAULT_NAME");
 var kvClient = new SecretClient(new Uri(keyVaultName),
     new DefaultAzureCredential());
 
@@ -18,7 +18,8 @@ builder.Services.AddCustomCors();
 builder.Services.AddCustomAutoMapper(typeof(Program));
 builder.Services.AddControllers();
 builder.Services.AddCustomSwagger();
-builder.Services.AddCustomCosmosDbService(builder.Configuration, kvClient);
+//builder.Services.AddCustomCosmosDbService(builder.Configuration, kvClient);
+builder.Services.AddCustomMongoDbService(builder.Configuration, kvClient);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

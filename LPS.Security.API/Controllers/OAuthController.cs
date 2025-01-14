@@ -65,7 +65,7 @@ namespace LPS.Security.API.Controllers
 			{
 				User user = new User
 				{
-					Id = Guid.NewGuid().ToString(),
+					UserId = Guid.NewGuid().ToString(),
 					Email = newUser.Email,
 					Password = securityService.GetSha256Hash(newUser.Password),
 					DisplayName = newUser.DisplayName,
@@ -103,7 +103,7 @@ namespace LPS.Security.API.Controllers
 				return BadRequest("Old password is wrong.");
 			}
 
-			if (await userService.ChangePassword(user.Id, model.NewPassword))
+			if (await userService.ChangePassword(user.UserId, model.NewPassword))
 			{
 				return Ok(new { message = "password changed successfully." });
 			}
@@ -144,7 +144,7 @@ namespace LPS.Security.API.Controllers
 				return Unauthorized();
 			}
 
-			await jwtTokenService.RevokeUserBearerTokensAsync(user.Id, refreshToken);
+			await jwtTokenService.RevokeUserBearerTokensAsync(user.UserId, refreshToken);
 
 			return Ok(new { message = "You loged out successfully." });
 		}
@@ -160,7 +160,7 @@ namespace LPS.Security.API.Controllers
 			}
 
 			return Ok(new {
-				user.Id,
+				Id = user.UserId,
 				user.Email,
 				user.DisplayName
 			});

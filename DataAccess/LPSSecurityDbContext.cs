@@ -1,5 +1,7 @@
 ﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
+using MongoDB.EntityFrameworkCore.Extensions;
 
 namespace DataAccess
 {
@@ -7,13 +9,17 @@ namespace DataAccess
     {
         public LPSSecurityDbContext(DbContextOptions<LPSSecurityDbContext> options) : base(options) { }
 
-        public DbSet<User> User { get; set; }
+        public DbSet<User> User { get; init; }
+
+        public static LPSSecurityDbContext Create(IMongoDatabase database) =>
+        new(new DbContextOptionsBuilder<LPSSecurityDbContext>()
+            .UseMongoDB(database.Client, database.DatabaseNamespace.DatabaseName)
+            .Options);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasAutoscaleThroughput(1000);
-
-            modelBuilder.Entity<User>().ToContainer(nameof(User)).HasPartitionKey(e => e.Id);
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<User>().ToCollection("user");
         }
     }
 }

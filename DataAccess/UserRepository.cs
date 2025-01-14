@@ -12,7 +12,7 @@ namespace DataAccess
 	{
 		private readonly ISecurityService securityService;
 
-		public UserRepository(LPSSecurityDbContext cosmosDbContext, ISecurityService securityService) : base(cosmosDbContext)
+		public UserRepository(LPSSecurityDbContext dbContext, ISecurityService securityService) : base(dbContext)
 		{
 			this.securityService = securityService;
 		}
@@ -36,7 +36,7 @@ namespace DataAccess
 			try
 			{
 
-				var user = Find(x => x.Id == userId).Result.FirstOrDefault();
+				var user = Find(x => x.UserId == userId).Result.FirstOrDefault();
 
 				user.Tokens.Clear();
 
@@ -54,7 +54,7 @@ namespace DataAccess
 		{
 			try
 			{
-				var user = Find(x => x.Id == userId).Result.FirstOrDefault();
+				var user = Find(x => x.UserId == userId).Result.FirstOrDefault();
 
 				user?.Tokens.Add(token);
 
@@ -72,7 +72,7 @@ namespace DataAccess
 		{
 			try
 			{
-				var user = Find(x => x.Id == userId).Result.FirstOrDefault();
+				var user = Find(x => x.UserId == userId).Result.FirstOrDefault();
 
 				return user.Tokens.Where(x => x.AccessTokenHash == accessTokenHash).FirstOrDefault();
 			}
@@ -113,7 +113,7 @@ namespace DataAccess
 		{
 			try
 			{
-				var user = Find(x => x.Id == userId).Result.FirstOrDefault();
+				var user = Find(x => x.UserId == userId).Result.FirstOrDefault();
 
 				user.Tokens.RemoveAll(x => x.RefreshTokenExpiresDateTime < DateTimeOffset.UtcNow);
 
@@ -136,7 +136,7 @@ namespace DataAccess
 
 			try
 			{
-				var user = Find(x => x.Id == userId).Result.FirstOrDefault();
+				var user = Find(x => x.UserId == userId).Result.FirstOrDefault();
 
 				user.Tokens.RemoveAll(x => x.RefreshTokenIdHashSource == refreshTokenIdHashSource || (x.RefreshTokenIdHash == refreshTokenIdHashSource && x.RefreshTokenIdHashSource == null));
 
@@ -185,7 +185,7 @@ namespace DataAccess
 
 		public async Task<bool> ChangePassword(string userId, string newPasswordHash, string newSerialNumber)
 		{
-			var user = Find(s => s.Id == userId).Result.FirstOrDefault();
+			var user = Find(s => s.UserId == userId).Result.FirstOrDefault();
 			try
 			{
 				user.Password = newPasswordHash;

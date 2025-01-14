@@ -32,7 +32,7 @@ namespace Service
 			this.jwtOptionSpanshot = jwtOptionSpanshot;
 			this.jwtBearerOptionSpanshot = jwtBearerOptionSpanshot;
 
-			string keyVaultName = Environment.GetEnvironmentVariable("KEY_VAULT_NAME");
+			string keyVaultName = "https://lps-mt-todo-vault.vault.azure.net/";//Environment.GetEnvironmentVariable("KEY_VAULT_NAME");
 			var kvClient = new SecretClient(new Uri(keyVaultName),
 				new DefaultAzureCredential());
 			KeyVaultSecret keySecret = kvClient.GetSecret("jwtKey2");
@@ -52,8 +52,8 @@ namespace Service
 				AccessTokenExpiresDateTime = now.AddMinutes(jwtOptionSpanshot.Value.AccessTokenExpirationMinutes)
 			};
 
-			await userService.DeleteTokensWithSameRefreshTokenSourceAsync(token.RefreshTokenIdHashSource, user.Id);
-			await AddUserTokenAsync(token, user.Id);
+			await userService.DeleteTokensWithSameRefreshTokenSourceAsync(token.RefreshTokenIdHashSource, user.UserId);
+			await AddUserTokenAsync(token, user.UserId);
 		}
 
 		public JwtTokensData CreateJwtTokens(User user)
@@ -126,11 +126,11 @@ namespace Service
 				new Claim(JwtRegisteredClaimNames.Jti, securityService.CreateCryptographicallySecureGuid().ToString(), ClaimValueTypes.String, jwtIssuer),
 				new Claim(JwtRegisteredClaimNames.Iss, jwtIssuer, ClaimValueTypes.String, jwtIssuer),
 				new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64, jwtIssuer),
-				new Claim(ClaimTypes.NameIdentifier, user.Id.ToString(), ClaimValueTypes.String, jwtIssuer),
+				new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString(), ClaimValueTypes.String, jwtIssuer),
 				new Claim(ClaimTypes.Name, user.Email, ClaimValueTypes.String, jwtIssuer),
 				new Claim("DisplayName", user.DisplayName, ClaimValueTypes.String, jwtIssuer),
 				new Claim(ClaimTypes.SerialNumber, user.SerialNumber, ClaimValueTypes.String, jwtIssuer),
-				new Claim(ClaimTypes.UserData, user.Id.ToString(), ClaimValueTypes.String, jwtIssuer)
+				new Claim(ClaimTypes.UserData, user.UserId.ToString(), ClaimValueTypes.String, jwtIssuer)
 			};
 
 			List<Role> roles = user.Roles.ToList();
