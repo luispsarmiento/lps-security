@@ -18,6 +18,7 @@ using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using MongoDB.Driver;
 
 namespace IoCConfig
 {
@@ -194,7 +195,16 @@ namespace IoCConfig
 						}
 					));
 		}
+		//https://www.mongodb.com/docs/entity-framework/current/quick-start/
+		public static void AddCustomMongoDbService(this IServiceCollection services, IConfiguration configuration, SecretClient client)
+        {
+			var configurationSection = configuration.GetSection("MongoDb");
+			KeyVaultSecret _mongoDbUri = client.GetSecret("mongoDbUri");
 
+			string mongoDbUri = _mongoDbUri.Value;
+
+			services.AddDbContext<LPSSecurityDbContext>(optionsBuilder => optionsBuilder.UseMongoDB(new MongoClient(mongoDbUri), configurationSection["DatabaseName"]));
+		}
 		public static void AddCustomAutoMapper(this IServiceCollection services, Type type)
         {
 			services.AddAutoMapper(type);

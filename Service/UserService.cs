@@ -37,7 +37,7 @@ namespace Service
 
 		public async ValueTask<User> FindUserByIdAsync(string userId)
 		{
-			return userRepository.Find(x => x.Id == userId).Result.FirstOrDefault();
+			return userRepository.Find(x => x.UserId == userId).Result.FirstOrDefault();
 		}
 
 		public async Task UpdateUserLastActivityDateAsync(User user)

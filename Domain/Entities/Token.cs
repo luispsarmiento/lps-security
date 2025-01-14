@@ -11,7 +11,7 @@ namespace Domain.Entities
 
         public string RefreshTokenIdHash { get; set; }
 
-        public string RefreshTokenIdHashSource { get; set; }
+        public string? RefreshTokenIdHashSource { get; set; }
 
         public DateTimeOffset RefreshTokenExpiresDateTime { get; set; }
     }

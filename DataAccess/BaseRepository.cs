@@ -1,11 +1,5 @@
 ﻿using Domain.Repositories;
 using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Azure.Cosmos;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,10 +8,9 @@ namespace DataAccess
     public class BaseRepository<T> : IBaseRepository<T> where T : BaseEntity
     {
         public readonly LPSSecurityDbContext _context;
-        public BaseRepository(LPSSecurityDbContext cosmosDbContext)
+        public BaseRepository(LPSSecurityDbContext dbContext)
         {
-            _context = cosmosDbContext;
-            _context.Database.EnsureCreated();
+            _context = dbContext;
         }
         public virtual async Task<T> Add(T entity)
         {
