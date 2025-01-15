@@ -5,7 +5,7 @@ using Azure.Security.KeyVault.Secrets;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string keyVaultName = "https://lps-mt-todo-vault.vault.azure.net/";//Environment.GetEnvironmentVariable("KEY_VAULT_NAME");
+string keyVaultName = Environment.GetEnvironmentVariable("KEY_VAULT_NAME");
 var kvClient = new SecretClient(new Uri(keyVaultName),
     new DefaultAzureCredential());
 
