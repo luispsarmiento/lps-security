@@ -105,6 +105,7 @@ namespace Service
 			{
 				// user has changed his/her password/roles/stat/IsActive
 				context.Fail("This token is expired. Please login again.");
+    				return;
 			}
 
 			string accessToken = context.Request.Headers.Authorization.ToString().Substring(7);
