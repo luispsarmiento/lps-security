@@ -83,7 +83,7 @@ namespace Service
 		{
 			ClaimsIdentity claimsIdentity = contextAccessor.HttpContext.User.Identity as ClaimsIdentity;
 
-			string userId = claimsIdentity?.FindFirst(ClaimTypes.UserData).Value;
+			string userId = claimsIdentity?.FindFirst(ClaimTypes.UserData)?.Value;
 			return await FindUserByIdAsync(userId);
 		}
 
