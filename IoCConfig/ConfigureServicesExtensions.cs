@@ -203,7 +203,7 @@ namespace IoCConfig
 
 			string mongoDbUri = _mongoDbUri.Value;
 
-			services.AddDbContext<LPSSecurityDbContext>(optionsBuilder => optionsBuilder.UseMongoDB(new MongoClient(mongoDbUri), configurationSection["DatabaseName"]));
+			services.AddDbContext<LPSSecurityDbContext>(optionsBuilder => optionsBuilder.UseMongoDB(mongoDbUri, configurationSection["DatabaseName"]));
 		}
 		public static void AddCustomAutoMapper(this IServiceCollection services, Type type)
         {

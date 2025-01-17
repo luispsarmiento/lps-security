@@ -11,11 +11,6 @@ namespace DataAccess
 
         public DbSet<User> User { get; init; }
 
-        public static LPSSecurityDbContext Create(IMongoDatabase database) =>
-        new(new DbContextOptionsBuilder<LPSSecurityDbContext>()
-            .UseMongoDB(database.Client, database.DatabaseNamespace.DatabaseName)
-            .Options);
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
