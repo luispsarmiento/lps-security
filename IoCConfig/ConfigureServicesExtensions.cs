@@ -202,8 +202,9 @@ namespace IoCConfig
 			KeyVaultSecret _mongoDbUri = client.GetSecret("mongoDbUri");
 
 			string mongoDbUri = _mongoDbUri.Value;
+			string databaseName = Environment.GetEnvironmentVariable("MONGO_DB_NAME");
 
-			services.AddDbContext<LPSSecurityDbContext>(optionsBuilder => optionsBuilder.UseMongoDB(mongoDbUri, configurationSection["DatabaseName"]));
+			services.AddDbContext<LPSSecurityDbContext>(optionsBuilder => optionsBuilder.UseMongoDB(mongoDbUri, databaseName));
 		}
 		public static void AddCustomAutoMapper(this IServiceCollection services, Type type)
         {

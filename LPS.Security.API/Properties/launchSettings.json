@@ -17,7 +17,8 @@
       "applicationUrl": "http://localhost:5157",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "KEY_VAULT_NAME": "your_key_vault_uri"
+        "KEY_VAULT_NAME": "your_key_vault_uri",
+        "MONGO_DB_NAME": "your_mongo_db_name"
       }
     },
     "IIS Express": {
