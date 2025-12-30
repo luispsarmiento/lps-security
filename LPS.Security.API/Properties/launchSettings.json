@@ -18,7 +18,9 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "KEY_VAULT_NAME": "your_key_vault_uri",
-        "MONGO_DB_NAME": "your_mongo_db_name"
+        "MONGO_DB_NAME": "your_mongo_db_name",
+        "ACCESS_TOKEN_EXP_MIN": "60",
+        "REFRESH_TOKEN_EXP_MIN": "10080"
       }
     },
     "IIS Express": {

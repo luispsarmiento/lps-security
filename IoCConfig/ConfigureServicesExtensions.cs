@@ -68,7 +68,7 @@ namespace IoCConfig
 					ValidateLifetime = true,
 					ClockSkew = TimeSpan.Zero,
 					RequireExpirationTime = true,
-					RequireSignedTokens = true
+					RequireSignedTokens = true,
 				};
 				configureOptions.Events = new JwtBearerEvents
 				{
@@ -112,7 +112,13 @@ namespace IoCConfig
 		}
 		public static void AddCustomOptions(this IServiceCollection services, IConfiguration configuration)
 		{
-			services.AddOptions<JwtOptions>().Bind(configuration.GetSection("Jwt"));
+			services.AddOptions<JwtOptions>()
+				.Bind(configuration.GetSection("Jwt"))
+				.Configure(opts =>
+				{
+					opts.AccessTokenExpirationMinutes = int.Parse(Environment.GetEnvironmentVariable("ACCESS_TOKEN_EXP_MIN") ?? "60");
+					opts.RefreshTokenExpirationMinutes = int.Parse(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXP_MIN") ?? "10080");
+                });
 		}
 		public static void AddCustomSwagger(this IServiceCollection services)
 		{
